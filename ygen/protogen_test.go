@@ -716,6 +716,10 @@ func TestSafeProtoName(t *testing.T) {
 		in:   "with.period",
 		want: "with_period",
 	}, {
+		name: "contains space",
+		in:   "with spaces",
+		want: "with_spaces",
+	}, {
 		name: "unchanged",
 		in:   "unchanged",
 		want: "unchanged",
@@ -1617,6 +1621,7 @@ func TestWriteProtoEnums(t *testing.T) {
 	testEnums := map[string][]string{
 		"enumOne": {"SPEED_2.5G", "SPEED_40G"},
 		"enumTwo": {"VALUE_1", "VALUE_2"},
+		"enumThree": {"SPACED 1", "SPACED 2"},
 	}
 	testYANGEnums := map[string]*yang.EnumType{}
 
@@ -1724,6 +1729,35 @@ enum SecondEnum {
   SECONDENUM_UNSET = 0;
   SECONDENUM_VALUE_1 = 1 [(yext.yang_name) = "VALUE_1"];
   SECONDENUM_VALUE_2 = 2 [(yext.yang_name) = "VALUE_2"];
+}
+`,
+		},
+	}, {
+		name: "enum for typedef enumeration",
+		inEnums: map[string]*yangEnum{
+			"e": {
+				name: "EnumName",
+				entry: &yang.Entry{
+					Name: "e",
+					Type: &yang.YangType{
+						Name: "typedef",
+						Kind: yang.Yenum,
+						Enum: testYANGEnums["enumThree"],
+					},
+					Annotation: map[string]interface{}{
+						"valuePrefix": []string{"SpacedEnum"},
+					},
+				},
+			},
+		},
+		inAnnotateEnumNames: true,
+		wantEnums: []string{
+			`
+// EnumName represents an enumerated type generated for the YANG enumerated type typedef.
+enum EnumName {
+  SPACEDENUM_UNSET = 0;
+  SPACEDENUM_SPACED_1 = 1 [(yext.yang_name) = "SPACED 1"];
+  SPACEDENUM_SPACED_2 = 2 [(yext.yang_name) = "SPACED 2"];
 }
 `,
 		},

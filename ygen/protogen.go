@@ -1088,6 +1088,7 @@ func safeProtoIdentifierName(name string) string {
 	replacer := strings.NewReplacer(
 		".", "_",
 		"-", "_",
+		" ", "_",
 	)
 	return replacer.Replace(name)
 }
